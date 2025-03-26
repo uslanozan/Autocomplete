@@ -1,21 +1,26 @@
+import java.util.ArrayList;
+
 public class Trie {
     private TrieNode root;
 
-    public Trie() { this.root = new TrieNode(); }
+    public Trie() {
+        this.root = new TrieNode(null);
+    }
 
-    public void insert(String word){
+    public void insert(String word) {
         TrieNode current = root;
 
         for (int i = 0; i < word.length(); i++) {
             char nodes = word.charAt(i);
-            //int index = nodes - 'a';
-            // a harfinin ASCII değeri 97 dir. nodes'daki ASCII değerini çıkararak aslında a-z arasındaki indexini buluruz
+            // int index = nodes - 'a';
+            // a harfinin ASCII değeri 97 dir. nodes'daki ASCII değerini çıkararak aslında
+            // a-z arasındaki indexini buluruz
             int index = nodes - 97;
 
-            System.out.println(nodes + " has index of " + index);
+            //System.out.println(nodes + " has index of " + index);
 
-            if(current.children[index] == null){
-                current.children[index] = new TrieNode();
+            if (current.children[index] == null) {
+                current.children[index] = new TrieNode(current);
             }
             current = current.children[index];
         }
@@ -25,122 +30,191 @@ public class Trie {
     // Trie içinde o kelime var mı diye kontrol et
     public boolean search(String word) {
         TrieNode current = root;
-    
-        for (int i = 0; i < word.length(); i++) { 
+
+        for (int i = 0; i < word.length(); i++) {
             int index = word.charAt(i) - 'a'; // Harfi dizi indeksine çevir
-            
+
             // Eğer harf Trie içinde yoksa, kelime yoktur
             if (current.children[index] == null) {
                 return false;
             }
-    
+
             current = current.children[index]; // Sonraki düğüme geç
         }
-    
+
         return current.isEndOfWord; // Kelimenin tam olup olmadığını kontrol et
+    }
+
+    public boolean hasChild(TrieNode node){
+
+        // bir tane bile çocuğu null değilse true dönecek
+        for (int i = 0; i < node.children.length; i++) {
+            if(node.children[i] != null){
+                return true;
+            }    
+        }
+        return false;
     }
 
     public boolean startsWith(String prefix) {
         TrieNode current = root;
-    
+
         // Ön ekin her harfini kontrol et
         for (int i = 0; i < prefix.length(); i++) {
             int index = prefix.charAt(i) - 'a';
-    
+
             // Eğer harf Trie'de yoksa, ön ek de yoktur
             if (current.children[index] == null) {
                 return false;
             }
-    
+
             current = current.children[index]; // Sonraki düğüme geç
         }
-    
+
         // Ön ek bulundu
         return true;
     }
 
     public void delete(String word) {
-        deleteRecursive(root, word, 0);
-    }
-    
-    private boolean deleteRecursive(TrieNode node, String word, int depth) {
-        if (node == null) {
-            return false; // Kelime bulunamadı
+        if (!search(word)) {
+            return;
         }
-    
-        // Kelimenin son harfine ulaşıldığında
-        if (depth == word.length()) {
-            if (!node.isEndOfWord) {
-                return false; // Kelime Trie'de değil
+
+        TrieNode current = root;
+        TrieNode lastWord = null;
+
+        // Ön ekin her harfini kontrol et
+        for (int i = 0; i < word.length(); i++) {
+            int index = word.charAt(i) - 'a'; // - 97
+            current = current.children[index]; // Sonraki düğüme geç
+            if (current.isEndOfWord){
+
+                if(hasChild(current)){
+                    current.isEndOfWord = false;
+                    return;
+                }
+                lastWord = current;
             }
-    
-            node.isEndOfWord = false; // Kelimeyi sil (artık kelime sonu değil)
-    
-            // Eğer düğümün çocuğu yoksa, bu düğüm de silinebilir
-            return hasNoChildren(node);
+                
         }
-    
-        // Kelimenin bir sonraki harfine geç
-        int index = word.charAt(depth) - 'a';
-        boolean shouldDeleteCurrentNode = deleteRecursive(node.children[index], word, depth + 1);
-    
-        // Eğer çocuk düğüm silinmeli ise, bu düğümü de sil
-        if (shouldDeleteCurrentNode) {
-            node.children[index] = null; // Çocuk düğümü sil
-    
-            // Eğer bu düğümün başka çocuğu yoksa ve kelime sonu değilse, bu düğüm de silinebilir
-            return hasNoChildren(node) && !node.isEndOfWord;
+        current.isEndOfWord = false;
+        TrieNode parent;
+        while (true) {
+            if (current == lastWord)
+                break;
+            parent = current.parent;
+            current.children = null;
+            current = null;
+            current = parent;
         }
-    
-        return false; // Bu düğüm silinmemeli
-    }
-    
-    private boolean hasNoChildren(TrieNode node) {
-        for (int i = 0; i < 26; i++) {
-            if (node.children[i] != null) {
-                return false; // Çocuk düğüm var
-            }
-        }
-        return true; // Çocuk düğüm yok
+
     }
 
-    public int countWords(){
-        return countRecursive(root);
-    }
+    public int countWords() {
+        //return countRecursive(root);
+        int wordNum = 0;
+        TrieNode node = root;
+        int index = 0;
 
-    private int countRecursive(TrieNode node) {
-        if (node == null) return 0; // Eğer düğüm boşsa sayma
-    
-        int count = node.isEndOfWord ? 1 : 0; // Eğer kelime sonuysa sayacı 1 artır
-    
-        // Tüm çocuk düğümler için recursive çağrı yap
-        for (int i = 0; i < 26; i++) {
-            count += countRecursive(node.children[i]); 
+        while (true) {
+            if (node.children[index] != null) {// alt seviyeye in
+                node.index = index;
+                node = node.children[index];
+                index = 0;
+                if (node.isEndOfWord) {
+                    wordNum = wordNum + 1;
+                }
+                continue;
+            }
+            index++;
+            while (index > node.children.length-1) { // üst seviyeye çık
+                if (node == root)
+                    return wordNum;
+                node = node.parent;
+                index = node.index+1;
+            }
         }
-    
-        return count; // Toplam kelime sayısını döndür
     }
-    
 
     // Trie içindeki kelimeleri yazdıran fonksiyon
     public void displayTrie() {
-        displayHelper(root, "");
+        TrieNode node;
+        node = root;
+        int index = 0;
+
+        String str = "";
+        while (true) {
+            if (node.children[index] != null) {// alt seviyeye in
+                node.index = index;
+                str += (char) (index + 'a'); // İndeksi tekrar harfe çevir
+                node = node.children[index];
+                index = 0;
+                if (node.isEndOfWord) {
+                    System.out.println(str);
+                }
+                continue;
+            }
+            index++;
+            while (index > node.children.length-1) {
+                if (node == root)
+                    return;
+                node = node.parent;
+                index = node.index+1;
+                if (str.length() > 0) {
+                    str = str.substring(0, str.length() - 1);// son karakteri sil
+                }
+            }
+        }
     }
 
-    // Yardımcı rekürsif fonksiyon
-    private void displayHelper(TrieNode node, String word) {
-        if (node.isEndOfWord) {
-            System.out.println(word); // Eğer kelimenin sonundaysak, ekrana yazdır
+    public ArrayList<String> suggestWords(String prefix){
+        TrieNode current = root;
+        int path = 0;
+        char c;
+        ArrayList<String> suggestedWords = new ArrayList<String>();
+
+        for (int i = 0; i < prefix.length(); i++) {
+            c = prefix.charAt(i); // prefixin her bir harfi
+            path = c - 'a';
+
+            if(current.children[path] != null){ // Yani bir sonraki harfi var
+                current = current.children[path];
+            }else{
+                return suggestedWords;
+            }
         }
 
-        for (int i = 0; i < 26; i++) {
-            if (node.children[i] != null) {
-                char ch = (char) (i + 'a'); // İndeksi tekrar harfe çevir
-                displayHelper(node.children[i], word + ch); // Yeni harfi ekleyerek devam et
+        if(hasChild(current) == false) return suggestedWords;
+
+
+        path = 0; // Pathi 0 lama sebebimiz prefixin son harfinden itibaren başlamasın diye
+        // prefixin sonundayız artık önerilere başlayabiliriz
+        while(true){
+
+            if (current.children[path] != null) {// alt seviyeye in
+                current.index = path;
+                prefix += (char) (path + 'a'); // İndeksi tekrar harfe çevir
+                current = current.children[path];
+                path = 0;
+                if (current.isEndOfWord) {
+                    //System.out.println(prefix);
+                    suggestedWords.add(prefix);
+                }
+                continue;
+            }
+            path++;
+            while (path > current.children.length-1) {
+                if (current == root)
+                    return suggestedWords;
+                current = current.parent;
+                path = current.index+1;
+                if (prefix.length() > 0) {
+                    prefix = prefix.substring(0, prefix.length() - 1);// son karakteri sil
+                }
             }
         }
     }
 
 
-    
+
 }
