@@ -29,6 +29,9 @@ public class App {
             System.out.println(word);
          }
 
+         trie.cleanTree();
+         trie.displayTrie();
+
 
     }
 }

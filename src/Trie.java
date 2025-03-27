@@ -138,6 +138,10 @@ public class Trie {
 
     // Trie içindeki kelimeleri yazdıran fonksiyon
     public void displayTrie() {
+        if(root == null){
+            System.out.println("Tree is empty!");
+            return;
+        }
         TrieNode node;
         node = root;
         int index = 0;
@@ -210,6 +214,35 @@ public class Trie {
                 path = current.index+1;
                 if (prefix.length() > 0) {
                     prefix = prefix.substring(0, prefix.length() - 1);// son karakteri sil
+                }
+            }
+        }
+    }
+
+    public void cleanTree(){
+        int wordNum = 0, nodeNum = 0,path = 0;
+        TrieNode current = root;
+        
+        while(true){
+            if(current.children[path] != null){ // En dibe inmesi için
+                current.index = path;
+                current = current.children[path];
+                path = 0;
+                if(current.isEndOfWord){
+                    wordNum++ ;
+                }
+            }else{
+                path ++;
+                while(path > current.children.length-1){
+                    if(current == root){
+                        root=null;
+                        System.out.println("Bütün tree temizlendi. Node sayısı: "+ nodeNum + " Word sayısı: " + wordNum);
+                        return;
+                    }
+                    current = current.parent;
+                    path = current.index + 1;
+                    current.children[current.index] = null;
+                    nodeNum ++;
                 }
             }
         }
