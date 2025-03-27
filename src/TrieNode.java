@@ -3,12 +3,14 @@ public class TrieNode {
     boolean isEndOfWord; // Bu düğüm bir kelimenin sonu mu?
     TrieNode parent;
     int index;
+    int addingCount;
 
     public TrieNode(TrieNode parentNode) {
         this.children = new TrieNode[26]; // Başlangıçta her harf için null
         this.isEndOfWord = false; // Başlangıçta kelime bitişi değil
         this.parent=parentNode;
         index=0;
+        addingCount=0;
     }
 
     

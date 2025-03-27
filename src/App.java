@@ -15,6 +15,8 @@ public class App {
          */
 
          trie.insert("apple");
+         trie.insert("apple");
+         trie.insert("apple");
          trie.insert("apt");
          trie.insert("app");
          trie.insert("banana");
@@ -28,6 +30,11 @@ public class App {
          for (String word : trie.suggestWords("ap")) {
             System.out.println(word);
          }
+
+         System.out.println("|||||| \n");
+         System.out.println(trie.countHowManyAdded("apple"));
+         System.out.println(trie.countHowManyAdded("banana"));
+         System.out.println(trie.countHowManyAdded("x"));
 
          trie.cleanTree();
          trie.displayTrie();

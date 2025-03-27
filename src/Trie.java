@@ -24,7 +24,27 @@ public class Trie {
             }
             current = current.children[index];
         }
+        current.addingCount ++;
         current.isEndOfWord = true;
+    }
+
+    public int countHowManyAdded(String word){
+        TrieNode current = root;
+
+        if(!search(word)){
+            return 0;
+        }
+
+        for (int i = 0; i < word.length(); i++) {
+            char nodes = word.charAt(i);
+            int index = nodes - 97;
+
+            if(current.children[index] != null){
+                current = current.children[index];
+            }
+        }
+
+        return current.addingCount;
     }
 
     // Trie içinde o kelime var mı diye kontrol et
@@ -247,7 +267,4 @@ public class Trie {
             }
         }
     }
-
-
-
 }
